@@ -2,24 +2,29 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
+/**
+ * Seeder principal del proyecto.
+ *
+ * Laravel ejecuta únicamente este archivo cuando corres
+ * `php artisan db:seed`. Desde aquí llamamos a los demás
+ * seeders en el orden en que deben correr.
+ */
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        /**
+         * $this->call() recibe un array de clases seeder
+         * y las ejecuta en ese orden, de arriba hacia abajo.
+         *
+         * El orden es importante cuando hay claves foráneas:
+         * primero las tablas independientes (packages),
+         * después las que dependen de ellas (reservations).
+         */
+        $this->call([
+            PackageSeeder::class,
         ]);
     }
 }
