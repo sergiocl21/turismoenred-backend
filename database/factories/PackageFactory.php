@@ -54,16 +54,22 @@ class PackageFactory extends Factory
         // Construimos un nombre como "Tour Cartagena 5 días"
         $nombre = "Tour {$destino} {$dias} días";
 
-        // ── Precio ───────────────────────────────────────
-        // randomFloat(decimales, min, max)
-        // Rango realista para paquetes nacionales en pesos.
-        $precio = $this->faker->randomFloat(2, 450000, 3500000);
-
-        // ── Temporada ────────────────────────────────────
-        // randomElement con pesos implícitos: repetimos 'mid'
-        // para que aparezca con más frecuencia, igual que
-        // ocurre en el mercado real.
+                // ── Temporada primero ────────────────────────────
+        // La generamos ANTES del precio porque el precio
+        // depende de ella. Repetimos 'mid' para que salga
+        // con más frecuencia, igual que en el mercado real.
         $temporada = $this->faker->randomElement(['low', 'mid', 'mid', 'high']);
+
+               // ── Precio según temporada ───────────────────────
+         // Cada temporada tiene su propio rango de precios.
+         // match() es la forma moderna de PHP 8 para elegir
+         // un valor según otro. Es como un switch, pero más
+         // compacto y devuelve un valor directamente.
+        $precio = match ($temporada) {
+        'low'  => $this->faker->randomFloat(2,  450000, 1200000),
+        'mid'  => $this->faker->randomFloat(2,  900000, 2000000),
+        'high' => $this->faker->randomFloat(2, 1500000, 3500000),
+        };
 
         return [
             // Código comercial único: PKG-0001, PKG-0002...
@@ -150,15 +156,23 @@ class PackageFactory extends Factory
         ]);
     }
 
-    /** Paquete de temporada baja con financiación extendida. */
-    public function lowSeason(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'season' => 'low',
-            'allows_installments' => true,
-            'max_installments' => 18,
+    /**
+      * Paquete de temporada baja con financiación extendida.
+
+      * ⚠️ Incluye el precio explícitamente.
+      * Un state sobrescribe claves; no re-ejecuta definition().
+      * Como el precio depende de la temporada, al cambiar una
+      * hay que ajustar la otra, o los datos quedan incoherentes.
+    */
+     public function lowSeason(): static
+   {
+         return $this->state(fn (array $attributes) => [
+             'season' => 'low',
+             'price' => $this->faker->randomFloat(2, 450000, 1200000),
+             'allows_installments' => true,
+             'max_installments' => 18,
         ]);
-    }
+}
 
     /** Paquete que solo acepta pago de contado. */
     public function cashOnly(): static
