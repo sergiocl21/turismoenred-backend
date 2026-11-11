@@ -29,4 +29,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+        /**
+     * Un usuario tiene muchas reservas.
+     * Lado "padre" de la relación: la clave foránea
+     * user_id vive en la tabla reservations.
+     */
+    public function reservations()
+    {
+        return $this->hasMany(Reservation::class);
+    }
 }

@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 /**
@@ -96,7 +98,7 @@ class Package extends Model
      * lo cambias aquí una vez y todo el sistema queda actualizado.
      * Esto es el principio DRY: Don't Repeat Yourself.
      */
-    public function scopeActive($query)
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', 'active');
     }
@@ -104,7 +106,7 @@ class Package extends Model
     /**
      * Filtra por temporada: Package::season('low')->get()
      */
-    public function scopeSeason($query, string $season)
+    public function scopeSeason(Builder $query, string $season): Builder
     {
         return $query->where('season', $season);
     }
@@ -112,9 +114,28 @@ class Package extends Model
     /**
      * Filtra solo los paquetes financiables.
      */
-    public function scopeFinanceable($query)
+    public function scopeFinanceable(Builder $query): Builder
     {
         return $query->where('allows_installments', true);
+    }
+
+
+        // ─────────────────────────────────────────────
+    // RELACIONES
+    // ─────────────────────────────────────────────
+
+    /**
+     * Un paquete tiene muchas reservas.
+     *
+     * hasMany se declara en el lado "padre": el que NO
+     * guarda la clave foránea. La columna package_id vive
+     * en reservations, así que Package es el padre.
+     *
+     * Uso: $paquete->reservations
+     */
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(Reservation::class);
     }
 
     // ─────────────────────────────────────────────
